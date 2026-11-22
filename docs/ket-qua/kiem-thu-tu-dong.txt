@@ -1,0 +1,94 @@
+KẾT QUẢ KIỂM THỬ TỰ ĐỘNG TESTFLOW — 2026-11-20 13:57:52 +0700
+
+===== 1. Unit test (npm test)
+PASS src/auth/auth.service.spec.ts
+  AuthService.login
+    √ trả token và thông tin người dùng khi đúng mật khẩu, không lộ passwordHash (21 ms)
+    √ từ chối mật khẩu sai (7 ms)
+    √ email không tồn tại trả cùng thông báo với sai mật khẩu (2 ms)
+    √ từ chối tài khoản bị khoá (3 ms)
+
+PASS src/common/guards/roles.guard.spec.ts
+  RolesGuard
+    √ cho qua khi route không gắn @Roles (6 ms)
+    √ cho Admin vào route @Roles(ADMIN) (1 ms)
+    √ chặn Tester ở route @Roles(ADMIN) với 403 (6 ms)
+
+PASS src/runs/runs.service.spec.ts
+  computeStats (BR15: tỷ lệ đạt = Đạt / (Đạt + Không đạt))
+    √ đợt rỗng hoặc chưa chạy ca nào: tiến độ 0, tỷ lệ đạt null (chưa có dữ liệu) (9 ms)
+    √ chỉ có Bị chặn: đã thực hiện nhưng tỷ lệ đạt vẫn null
+    √ Bị chặn và Chưa chạy không làm giảm tỷ lệ đạt (1 ms)
+  compareRuns (BR16: so sánh với đợt trước)
+    √ phân loại thụt lùi, đã sửa, vẫn lỗi và ca mới (1 ms)
+    √ ca gốc đã bị xoá (testCaseId null) vẫn được ghép theo mã ca (4 ms)
+
+Test Suites: 3 passed, 3 total
+Tests:       12 passed, 12 total
+Snapshots:   0 total
+Time:        3.544 s, estimated 8 s
+Ran all test suites.
+
+===== 2. Kiểm thử API trên CSDL thật (npm run test:e2e)
+PASS test/runs.e2e-spec.ts
+  TestFlow API – đợt kiểm thử, kết quả, thống kê
+    Tạo đợt và bản chụp
+      √ TS-27 tạo đợt hợp lệ: đủ ca, trạng thái Đang mở, mọi kết quả Chưa chạy, có bản chụp bước (23 ms)
+      √ TS-28 tạo đợt không chọn ca hoặc thiếu phiên bản → 400 (9 ms)
+      √ TS-29 chọn trùng một ca trong đợt → 400 (5 ms)
+      √ TS-30 chọn ca thuộc dự án khác → 400, không để lại đợt dở dang (8 ms)
+      √ TS-31 sửa ca gốc sau khi tạo đợt: bản chụp trong đợt giữ nguyên (29 ms)
+      √ TS-32 xoá ca gốc: đợt cũ vẫn còn bản chụp và kết quả (36 ms)
+    Ghi kết quả và thống kê
+      √ TS-33 thống kê khi chưa có kết quả: tiến độ 0, tỷ lệ đạt "chưa có dữ liệu" (null) (8 ms)
+      √ TS-34 ghi Đạt: lưu người thực hiện và thời điểm (7 ms)
+      √ TS-35 ghi Không đạt/Bị chặn thiếu mô tả → 400; có mô tả → 200 (23 ms)
+      √ TS-36 trạng thái kết quả không hợp lệ → 400 (5 ms)
+      √ TS-37 thống kê đúng công thức: tỷ lệ đạt = Đạt/(Đạt+Không đạt), Bị chặn không tính (8 ms)
+      √ TS-38 xuất CSV: UTF-8 có BOM, tiếng Việt, đủ cột (7 ms)
+      √ TS-39 lịch sử ca qua các đợt (7 ms)
+      √ TS-40 đóng đợt; đóng lần hai → 400 (16 ms)
+      √ TS-41 sửa kết quả của đợt đã đóng → 400, kết quả cũ giữ nguyên (11 ms)
+      √ TS-44 so sánh với đợt trước: phát hiện ca thụt lùi và ca đã sửa (59 ms)
+    Quyền và lưu trữ
+      √ TS-42 không có token gọi API đợt → 401 (4 ms)
+      √ TS-43 dự án đã lưu trữ: không tạo đợt được nhưng vẫn xem được lịch sử (28 ms)
+
+PASS test/week3.e2e-spec.ts
+  TestFlow API – tuần 3 (xác thực, phân quyền, kiểm tra đầu vào, CRUD ca)
+    Đăng nhập
+      √ TS-01 đăng nhập đúng trả token
+      √ TS-02 sai mật khẩu → 401 (95 ms)
+      √ TS-03 email sai định dạng, thiếu mật khẩu → 400 kèm thông báo (6 ms)
+      √ TS-04 tài khoản bị khoá → 401 (68 ms)
+      √ TS-05 gửi kèm trường lạ (role) khi đăng nhập → 400 (4 ms)
+      √ TS-06 email viết hoa/khoảng trắng vẫn đăng nhập được (80 ms)
+    Xác thực token
+      √ TS-07 không có token → 401 (4 ms)
+      √ TS-08 token giả mạo → 401 (4 ms)
+      √ TS-09 /auth/me trả người dùng hiện tại, không có passwordHash (6 ms)
+    Phân quyền
+      √ TS-10 Tester xem danh sách tài khoản → 403 (5 ms)
+      √ TS-11 Tester tạo tài khoản → 403 (5 ms)
+      √ TS-12 Tester lưu trữ dự án → 403 (3 ms)
+      √ TS-13 Admin tạo tài khoản; mật khẩu yếu → 400; trùng email → 409 (78 ms)
+      √ TS-14 Admin khoá tài khoản → token cũ của tài khoản đó bị từ chối ngay (165 ms)
+      √ TS-15 Admin không thể tự khoá chính mình → 400 (12 ms)
+    Dự án, bộ ca và ca kiểm thử
+      √ TS-16 tạo dự án thiếu tên → 400; trùng tên → 409 (18 ms)
+      √ TS-17 tạo ca hợp lệ: mã được viết hoa, bước đánh số 1..n (18 ms)
+      √ TS-18 tạo ca thiếu tên/bước → 400 (6 ms)
+      √ TS-19 bước thiếu kết quả mong đợi → 400 (7 ms)
+      √ TS-20 trùng mã ca trong dự án → 409 (12 ms)
+      √ TS-21 chọn bộ kiểm thử của dự án khác → 400 (13 ms)
+      √ TS-22 tìm kiếm theo mã/tên và lọc độ ưu tiên (19 ms)
+      √ TS-23 cập nhật ca thay toàn bộ danh sách bước (19 ms)
+      √ TS-24 xoá bộ kiểm thử còn ca → 409 (10 ms)
+      √ TS-25 dự án đã lưu trữ không cho thêm ca → 400; mở lại thì được (30 ms)
+      √ TS-26 phân trang: pageSize > 100 → 400 (6 ms)
+
+Test Suites: 2 passed, 2 total
+Tests:       44 passed, 44 total
+Snapshots:   0 total
+Time:        5.354 s, estimated 11 s
+Ran all test suites.

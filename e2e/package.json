@@ -1,0 +1,14 @@
+{
+  "name": "testflow-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Kiểm thử đầu cuối (E2E) TestFlow bằng Playwright: 3 luồng nghiệp vụ chính",
+  "scripts": {
+    "test": "playwright test --project=e2e",
+    "screenshots": "playwright test --project=screenshots",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}

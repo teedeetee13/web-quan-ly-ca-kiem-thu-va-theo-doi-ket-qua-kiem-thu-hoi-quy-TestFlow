@@ -1,6 +1,6 @@
 {
   "name": "testflow-backend",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "private": true,
   "description": "TestFlow REST API (NestJS + Prisma + PostgreSQL)",
   "scripts": {
@@ -14,7 +14,10 @@
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
     "test": "jest",
-    "test:e2e": "jest --config test/jest-e2e.json --runInBand"
+    "test:e2e": "jest --config test/jest-e2e.json --runInBand",
+    "perf": "node scripts/perf.mjs",
+    "db:backup": "node scripts/backup.mjs",
+    "db:restore": "node scripts/restore.mjs"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

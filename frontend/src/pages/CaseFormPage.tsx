@@ -2,8 +2,8 @@ import { FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api } from '../api';
 import { fmtDate, PRIORITIES, PRIORITY_LABEL } from '../labels';
-import { ErrorBox, Field } from '../components/ui';
-import type { Priority, Project, Step, Suite, TestCase } from '../types';
+import { ErrorBox, Field, RunStatusBadge, StatusBadge } from '../components/ui';
+import type { CaseHistoryItem, Priority, Project, Step, Suite, TestCase } from '../types';
 
 interface FormState {
   code: string;
@@ -243,6 +243,64 @@ export default function CaseFormPage() {
           </button>
         )}
       </div>
+
+      {caseId && <CaseHistory caseId={caseId} currentSteps={original?.steps.length ?? 0} />}
     </form>
+  );
+}
+
+/** Lịch sử kết quả của ca qua các đợt: đọc từ bản chụp nên đúng với nội dung lúc chạy. */
+function CaseHistory({ caseId, currentSteps }: { caseId: number; currentSteps: number }) {
+  const [items, setItems] = useState<CaseHistoryItem[] | null>(null);
+  useEffect(() => {
+    api<CaseHistoryItem[]>('GET', `/cases/${caseId}/history`).then(setItems).catch(() => setItems([]));
+  }, [caseId]);
+  if (!items) return null;
+  return (
+    <section style={{ marginTop: 28 }}>
+      <h2>Lịch sử kết quả qua các đợt</h2>
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Đợt kiểm thử</th>
+            <th>Phiên bản</th>
+            <th>Kết quả</th>
+            <th>Kết quả thực tế / ghi chú</th>
+            <th className="num">Số bước lúc chạy</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((h) => (
+            <tr key={h.id}>
+              <td>
+                <Link to={`/runs/${h.run.id}?rc=${h.id}`}>{h.run.name}</Link>{' '}
+                <RunStatusBadge value={h.run.status} />
+              </td>
+              <td className="mono">{h.run.version}</td>
+              <td>
+                <StatusBadge value={h.result?.status ?? 'UNTESTED'} />
+              </td>
+              <td>
+                {h.result?.actualResult}
+                {h.result?.note && <div className="muted small">{h.result.note}</div>}
+              </td>
+              <td className="num">
+                {h.stepsSnapshot.length}
+                {h.stepsSnapshot.length !== currentSteps && (
+                  <span className="muted small" title="Ca gốc đã được sửa sau đợt này"> (hiện {currentSteps})</span>
+                )}
+              </td>
+            </tr>
+          ))}
+          {items.length === 0 && (
+            <tr>
+              <td colSpan={5} className="empty">
+                Ca này chưa nằm trong đợt kiểm thử nào.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </section>
   );
 }

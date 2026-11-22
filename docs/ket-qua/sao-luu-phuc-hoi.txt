@@ -1,0 +1,46 @@
+THỬ SAO LƯU VÀ PHỤC HỒI CSDL TESTFLOW — 2026-11-16 14:11:29 +0700
+Máy: Windows_NT 10.0.26300 · 12th Gen Intel(R) Core(TM) i5-12500H · 16 GB RAM
+
+== Bước 1. Sao lưu dữ liệu demo (npm run db:backup)
+Đã sao lưu: D:\WORKSPACE\ON_SCHOOL\ĐACN_CNPM\Testflow\backend\backups\testflow-20261116-071129.json
+┌────────────┬────────┐
+│ (index)    │ Values │
+├────────────┼────────┤
+│ user       │ 3      │
+│ project    │ 2      │
+│ testSuite  │ 7      │
+│ testCase   │ 34     │
+│ testStep   │ 47     │
+│ testRun    │ 3      │
+│ runCase    │ 66     │
+│ testResult │ 66     │
+└────────────┴────────┘
+checksum: b577096fab269d10531c60bd05b18b512a64e213c13932c0810ea11759500a32
+
+== Bước 2. Giả lập sự cố: xoá đợt kiểm thử số 2 và toàn bộ ca của bộ Thanh toán
+Đã xoá đợt: Hồi quy sau sửa lỗi mã giảm giá | số ca bị xoá: 5
+Số đợt còn lại: 2 | số ca còn lại: 29
+
+== Bước 3. Phục hồi từ bản sao lưu mới nhất (npm run db:restore)
+Đã phục hồi từ: D:\WORKSPACE\ON_SCHOOL\ĐACN_CNPM\Testflow\backend\backups\testflow-20261116-071129.json
+┌────────────┬─────────┬──────────────┐
+│ (index)    │ sao lưu │ sau phục hồi │
+├────────────┼─────────┼──────────────┤
+│ user       │ 3       │ 3            │
+│ project    │ 2       │ 2            │
+│ testSuite  │ 7       │ 7            │
+│ testCase   │ 34      │ 34           │
+│ testStep   │ 47      │ 47           │
+│ testRun    │ 3       │ 3            │
+│ runCase    │ 66      │ 66           │
+│ testResult │ 66      │ 66           │
+└────────────┴─────────┴──────────────┘
+Kiểm tra: dữ liệu sau phục hồi KHỚP hoàn toàn với bản sao lưu
+
+== Bước 4. Kiểm tra qua API sau phục hồi
+Đăng nhập lại: thành công
+Đợt 3 | Hồi quy trước phát hành 1.2 | v1.2.0 | OPEN | tỷ lệ đạt 100.0%
+Đợt 2 | Hồi quy sau sửa lỗi mã giảm giá | v1.1.0 | CLOSED | tỷ lệ đạt 95.5%
+Đợt 1 | Hồi quy trước phát hành 1.0 | v1.0.0 | CLOSED | tỷ lệ đạt 90.5%
+Ca bộ Thanh toán: 5
+Tạo bản ghi mới sau phục hồi: id = 8 (bộ đếm id đã đặt lại đúng, không trùng khoá)

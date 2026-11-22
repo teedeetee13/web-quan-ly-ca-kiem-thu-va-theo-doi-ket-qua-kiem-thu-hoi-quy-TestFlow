@@ -1,0 +1,18 @@
+{
+  "name": "testflow-docs-build",
+  "private": true,
+  "description": "Dựng báo cáo (.docx), slide (.pptx) và ảnh sơ đồ cho hồ sơ nộp",
+  "scripts": {
+    "diagrams": "node render-diagrams.mjs",
+    "report": "node build-report.mjs",
+    "slides": "node build-slides.mjs",
+    "forms": "node build-forms.mjs",
+    "pdf": "powershell -ExecutionPolicy Bypass -File export-pdf.ps1",
+    "all": "npm run diagrams && npm run report && npm run slides && npm run forms && npm run pdf"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.56.1",
+    "docx": "^9.5.1",
+    "pptxgenjs": "^3.12.0"
+  }
+}

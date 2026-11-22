@@ -7,7 +7,11 @@ import ProjectsPage from './pages/ProjectsPage';
 import ProjectDetailPage from './pages/ProjectDetailPage';
 import CaseFormPage from './pages/CaseFormPage';
 import UsersPage from './pages/UsersPage';
-import ComingSoonPage from './pages/ComingSoonPage';
+import RunsHomePage from './pages/RunsHomePage';
+import RunsPage from './pages/RunsPage';
+import CreateRunPage from './pages/CreateRunPage';
+import RunExecutePage from './pages/RunExecutePage';
+import RunReportPage from './pages/RunReportPage';
 import type { Role } from './types';
 
 /** Chặn ở giao diện cho trải nghiệm tốt; quyền thực sự vẫn do backend kiểm tra. */
@@ -35,8 +39,11 @@ export default function App() {
         <Route path="/projects/:projectId" element={<ProjectDetailPage />} />
         <Route path="/projects/:projectId/cases/new" element={<CaseFormPage />} />
         <Route path="/cases/:caseId" element={<CaseFormPage />} />
-        <Route path="/runs" element={<ComingSoonPage title="Đợt kiểm thử" week="tuần 5" />} />
-        <Route path="/reports" element={<ComingSoonPage title="Thống kê & xuất CSV" week="tuần 6" />} />
+        <Route path="/runs" element={<RunsHomePage />} />
+        <Route path="/projects/:projectId/runs" element={<RunsPage />} />
+        <Route path="/projects/:projectId/runs/new" element={<CreateRunPage />} />
+        <Route path="/runs/:runId" element={<RunExecutePage />} />
+        <Route path="/runs/:runId/report" element={<RunReportPage />} />
         <Route
           path="/users"
           element={

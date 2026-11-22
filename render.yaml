@@ -1,0 +1,22 @@
+# Triển khai backend NestJS lên Render (gói miễn phí). CSDL dùng PostgreSQL của Neon hoặc Render.
+# Render → New → Blueprint → chọn kho GitHub này; điền DATABASE_URL và CORS_ORIGIN khi được hỏi.
+services:
+  - type: web
+    name: testflow-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci && npx prisma generate && npm run build && npx prisma migrate deploy
+    startCommand: npm run start:prod
+    healthCheckPath: /api/docs
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 8h

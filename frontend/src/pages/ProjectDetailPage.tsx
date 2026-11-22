@@ -64,6 +64,10 @@ export default function ProjectDetailPage() {
           </h1>
           <p className="muted">{project?.description}</p>
         </div>
+        <div className="row-actions">
+        <Link className="btn ghost" to={`/projects/${projectId}/runs`}>
+          Đợt kiểm thử ({project?._count.runs ?? 0})
+        </Link>
         {!readOnly && (
           <button
             className="btn primary"
@@ -74,6 +78,7 @@ export default function ProjectDetailPage() {
             + Ca kiểm thử
           </button>
         )}
+        </div>
       </div>
 
       <ErrorBox error={error} />

@@ -1,3 +1,6 @@
+/** Địa chỉ API: mặc định /api (Vite chuyển tiếp khi chạy máy); khi triển khai đặt VITE_API_BASE. */
+const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') ?? '/api';
+
 const TOKEN_KEY = 'testflow.token';
 
 export const tokenStore = {
@@ -32,7 +35,7 @@ export async function api<T>(
     if (v !== undefined && v !== null && v !== '') qs.set(k, String(v));
   }
   const token = tokenStore.get();
-  const res = await fetch(`/api${path}${qs.size ? `?${qs}` : ''}`, {
+  const res = await fetch(`${API_BASE}${path}${qs.size ? `?${qs}` : ''}`, {
     method,
     headers: {
       ...(opts.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
@@ -48,4 +51,24 @@ export async function api<T>(
     throw new ApiError(res.status, Array.isArray(msg) ? msg : [msg]);
   }
   return data as T;
+}
+
+/** Tải file từ API có kèm token (thẻ <a href> thường không gửi được header Authorization). */
+export async function download(path: string) {
+  const token = tokenStore.get();
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    const msg = data?.message ?? `Lỗi ${res.status}`;
+    throw new ApiError(res.status, Array.isArray(msg) ? msg : [msg]);
+  }
+  const name = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') ?? '')?.[1] ?? 'export.csv';
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(url);
 }

@@ -1,9 +1,9 @@
 /**
- * Dữ liệu mẫu demo: 2 tài khoản, 2 dự án, 7 bộ kiểm thử, 32 ca kiểm thử.
+ * Dữ liệu mẫu demo: 3 tài khoản, 2 dự án, 7 bộ kiểm thử, 34 ca kiểm thử, 3 đợt kiểm thử hồi quy.
  * CẢNH BÁO: script xoá toàn bộ dữ liệu cũ rồi tạo lại — chỉ dùng cho môi trường demo.
  * Tài khoản mẫu là dữ liệu giả lập (đề cương mục 2.4).
  */
-import { Priority, PrismaClient, Role } from '@prisma/client';
+import { Prisma, Priority, PrismaClient, ResultStatus, Role } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -169,7 +169,107 @@ async function seedProject(
       });
     }
   }
-  return project;
+  return project.id;
+}
+
+type Outcome = [status: ResultStatus, actualResult?: string, note?: string];
+
+/** Tạo một đợt giống RunsService.create: chụp nội dung ca hiện tại, rồi ghi kết quả. */
+async function createRun(
+  projectId: number,
+  name: string,
+  version: string,
+  createdAt: Date,
+  createdById: number,
+  outcomes: Record<string, Outcome>,
+  opts: { executeAll: boolean; closedAt?: Date },
+) {
+  const cases = await prisma.testCase.findMany({
+    where: { projectId },
+    include: { steps: { orderBy: { order: 'asc' } } },
+    orderBy: { code: 'asc' },
+  });
+  const run = await prisma.testRun.create({
+    data: {
+      projectId,
+      name,
+      version,
+      createdById,
+      createdAt,
+      status: opts.closedAt ? 'CLOSED' : 'OPEN',
+      closedAt: opts.closedAt,
+    },
+  });
+  for (const [i, c] of cases.entries()) {
+    const [status, actualResult, note] =
+      outcomes[c.code] ?? (opts.executeAll ? ['PASSED'] : ['UNTESTED']);
+    const executed = status !== 'UNTESTED';
+    await prisma.runCase.create({
+      data: {
+        runId: run.id,
+        testCaseId: c.id,
+        code: c.code,
+        title: c.title,
+        preconditions: c.preconditions,
+        priority: c.priority,
+        createdAt,
+        stepsSnapshot: c.steps.map(({ order, action, expected }) => ({
+          order,
+          action,
+          expected,
+        })) as Prisma.InputJsonValue,
+        result: {
+          create: {
+            status,
+            actualResult: actualResult ?? null,
+            note: note ?? null,
+            executedById: executed ? createdById : null,
+            executedAt: executed ? new Date(createdAt.getTime() + (i + 1) * 4 * 60_000) : null,
+          },
+        },
+      },
+    });
+  }
+}
+
+/**
+ * 3 đợt hồi quy cho BookStore, kể một câu chuyện thật:
+ * bản 1.0 lỗi thanh toán → bản 1.1 sửa thanh toán nhưng làm hỏng đăng nhập (thụt lùi)
+ * → TC_LOGIN_02 được viết thêm bước → bản 1.2 đang chạy dở, đăng nhập đã đạt lại.
+ */
+async function seedRuns(projectId: number, testerId: number) {
+  const d = (s: string) => new Date(`${s}+07:00`);
+  await createRun(projectId, 'Hồi quy trước phát hành 1.0', '1.0.0', d('2026-10-20T08:30:00'), testerId, {
+    TC_PAY_04: ['FAILED', 'Mã HETHAN vẫn được áp dụng, tổng tiền giảm 10%', 'Lỗi tính tiền, chặn phát hành'],
+    TC_CART_06: ['BLOCKED', undefined, 'Chưa có dữ liệu sách tồn kho = 0 trên môi trường thử'],
+    TC_SEARCH_05: ['FAILED', 'Sách giá 99.000đ đứng trước sách giá 45.000đ (sắp xếp theo chuỗi, không theo số)'],
+  }, { executeAll: true, closedAt: d('2026-10-21T17:00:00') });
+
+  await createRun(projectId, 'Hồi quy sau sửa lỗi mã giảm giá', '1.1.0', d('2026-11-03T08:30:00'), testerId, {
+    TC_LOGIN_02: ['FAILED', 'Bấm Đăng nhập thì trang trắng, không có thông báo lỗi', 'Thụt lùi: bản 1.0 đạt. Nghi do sửa hàm kiểm tra phiên dùng chung'],
+    TC_CART_06: ['PASSED'],
+  }, { executeAll: true, closedAt: d('2026-11-04T16:30:00') });
+
+  // Sau đợt 1.1, ca TC_LOGIN_02 được viết chặt hơn. Hai đợt cũ vẫn giữ bản chụp 3 bước.
+  const login02 = await prisma.testCase.findFirstOrThrow({ where: { projectId, code: 'TC_LOGIN_02' } });
+  await prisma.testStep.create({
+    data: {
+      caseId: login02.id,
+      order: 4,
+      action: 'Kiểm tra trường mật khẩu sau khi báo lỗi',
+      expected: 'Ô mật khẩu được xoá trắng, ô email giữ nguyên giá trị',
+    },
+  });
+  await prisma.testCase.update({ where: { id: login02.id }, data: { updatedById: testerId } });
+
+  const openOutcomes: Record<string, Outcome> = {};
+  for (const code of ['TC_LOGIN_01', 'TC_LOGIN_02', 'TC_LOGIN_03', 'TC_LOGIN_04', 'TC_LOGIN_05', 'TC_LOGIN_06',
+    'TC_PAY_02', 'TC_PAY_03', 'TC_PAY_04', 'TC_CART_01', 'TC_CART_02']) {
+    openOutcomes[code] = ['PASSED'];
+  }
+  openOutcomes.TC_PAY_01 = ['BLOCKED', undefined, 'Máy chủ đơn hàng thử nghiệm đang bảo trì đến 17/11'];
+  await createRun(projectId, 'Hồi quy trước phát hành 1.2', '1.2.0', d('2026-11-14T08:30:00'), testerId,
+    openOutcomes, { executeAll: false });
 }
 
 async function main() {
@@ -186,7 +286,7 @@ async function main() {
       passwordHash: await bcrypt.hash('Admin@123', 10),
     },
   });
-  await prisma.user.create({
+  const tester = await prisma.user.create({
     data: {
       email: 'tester@testflow.local',
       fullName: 'Nguyễn Văn Kiểm',
@@ -204,17 +304,20 @@ async function main() {
     },
   });
 
-  await seedProject('Website bán sách BookStore', 'Ứng dụng mẫu để thử kiểm thử hồi quy qua các phiên bản.', bookstore, admin.id);
+  const bookstoreId = await seedProject('Website bán sách BookStore', 'Ứng dụng mẫu để thử kiểm thử hồi quy qua các phiên bản.', bookstore, admin.id);
   await seedProject('Phần mềm quản lý thư viện', 'Dự án mẫu thứ hai: mượn/trả sách và độc giả.', library, admin.id);
 
-  const [users, projects, suites, cases, steps] = await Promise.all([
+  await seedRuns(bookstoreId, tester.id);
+
+  const [users, projects, suites, cases, steps, runs] = await Promise.all([
     prisma.user.count(),
     prisma.project.count(),
     prisma.testSuite.count(),
     prisma.testCase.count(),
     prisma.testStep.count(),
+    prisma.testRun.count(),
   ]);
-  console.log(`Seed xong: ${users} tài khoản, ${projects} dự án, ${suites} bộ, ${cases} ca, ${steps} bước.`);
+  console.log(`Seed xong: ${users} tài khoản, ${projects} dự án, ${suites} bộ, ${cases} ca, ${steps} bước, ${runs} đợt.`);
 }
 
 main()

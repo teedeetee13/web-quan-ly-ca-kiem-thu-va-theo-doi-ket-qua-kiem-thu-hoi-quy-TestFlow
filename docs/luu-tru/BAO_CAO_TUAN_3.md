@@ -1,3 +1,5 @@
+> **Lưu trữ:** báo cáo tiến độ tuần 3 (28/10/2026), giữ lại làm minh chứng quá trình. Trạng thái các chức năng trong tài liệu này là tại thời điểm đó; trạng thái hiện tại xem [TIEN_DO_HOAN_THANH.md](../TIEN_DO_HOAN_THANH.md).
+
 # BÁO CÁO TIẾN ĐỘ TUẦN 3 — TestFlow
 
 **Đề tài:** Xây dựng ứng dụng web quản lý ca kiểm thử và theo dõi kết quả kiểm thử hồi quy TestFlow

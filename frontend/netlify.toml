@@ -1,0 +1,15 @@
+# Triển khai giao diện lên Netlify. Base directory: frontend
+# Biến môi trường cần đặt trên Netlify: VITE_API_BASE = https://<tên-backend>.onrender.com/api
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Ứng dụng một trang (React Router): mọi đường dẫn đều trả về index.html,
+# nếu không thì tải lại trang /projects/1 sẽ báo 404.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

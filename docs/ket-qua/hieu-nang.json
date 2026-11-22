@@ -1,0 +1,36 @@
+{
+  "measuredAt": "2026-11-16T07:10:50.483Z",
+  "environment": {
+    "os": "Windows_NT 10.0.26300",
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12500H",
+    "cpuCores": 16,
+    "ramGB": 15.7,
+    "node": "v22.12.0",
+    "database": "PostgreSQL 18 (embedded-postgres), cùng máy",
+    "api": "NestJS bản build production (node dist/main), cùng máy"
+  },
+  "setup": {
+    "cases": 1000,
+    "steps": 3000,
+    "concurrentUsers": 5,
+    "durationSeconds": 30
+  },
+  "listCasesApi": {
+    "requests": 8967,
+    "errors": 0,
+    "throughputPerSec": 298.9,
+    "p50": 15,
+    "p95": 33,
+    "p99": 41,
+    "max": 69.2
+  },
+  "target": {
+    "p95Ms": 1000,
+    "passed": true
+  },
+  "extra": {
+    "createRunWith1000CasesMs": 854.8,
+    "createRunStatus": 201,
+    "getRunDetail1000CasesMs": 62.6
+  }
+}

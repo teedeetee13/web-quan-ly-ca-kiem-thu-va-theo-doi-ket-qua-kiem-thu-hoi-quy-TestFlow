@@ -1,0 +1,10 @@
+KẾT QUẢ KIỂM THỬ E2E (PLAYWRIGHT, CHROMIUM) — 2026-11-20 13:58:09 +0700
+
+
+Running 3 tests using 1 worker
+
+  ok 1 [e2e] › tests\flows.spec.ts:55:5 › E2E-01 đăng nhập sai bị từ chối; đăng nhập đúng và tạo ca kiểm thử (3.3s)
+  ok 2 [e2e] › tests\flows.spec.ts:82:5 › E2E-02 tạo đợt, ghi kết quả; sửa ca gốc không làm đổi bản chụp trong đợt (2.2s)
+  ok 3 [e2e] › tests\flows.spec.ts:130:5 › E2E-03 đóng đợt, kết quả bị khoá; xem thống kê và xuất CSV tiếng Việt (1.5s)
+
+  3 passed (8.8s)

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { api } from '../api';
 import { useAuth } from '../auth';
 import { ROLE_LABEL } from '../labels';
@@ -8,6 +8,9 @@ import { ErrorBox, Field, Modal } from './ui';
 export default function Layout() {
   const { user, logout } = useAuth();
   const [pwOpen, setPwOpen] = useState(false);
+  const { pathname } = useLocation();
+  // Trang đợt nằm dưới /projects/:id/runs nhưng thuộc mục menu "Đợt kiểm thử".
+  const inRuns = pathname.startsWith('/runs') || /^\/projects\/\d+\/runs/.test(pathname);
 
   return (
     <div className="shell">
@@ -16,16 +19,15 @@ export default function Layout() {
           <span className="logo">✓</span> TestFlow
         </div>
         <nav>
-          <NavLink to="/projects">Dự án &amp; ca kiểm thử</NavLink>
-          <NavLink to="/runs" className="soon">
-            Đợt kiểm thử <small>T5</small>
+          <NavLink to="/projects" className={() => (inRuns || pathname.startsWith('/users') ? '' : 'active')}>
+            Dự án &amp; ca kiểm thử
           </NavLink>
-          <NavLink to="/reports" className="soon">
-            Thống kê <small>T6</small>
+          <NavLink to="/runs" className={() => (inRuns ? 'active' : '')}>
+            Đợt kiểm thử &amp; thống kê
           </NavLink>
           {user?.role === 'ADMIN' && <NavLink to="/users">Tài khoản</NavLink>}
         </nav>
-        <div className="sidebar-foot">v0.3 · tuần 3</div>
+        <div className="sidebar-foot">TestFlow v1.0</div>
       </aside>
 
       <div className="main">
